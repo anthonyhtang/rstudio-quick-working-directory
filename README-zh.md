@@ -1,51 +1,94 @@
 # RStudio 剪贴板路径插件（`rstudio.clipboard.path`）
 
-本仓库提供 **RStudio 插件**：在 **Addins** 菜单里选择（或设快捷键），会**读取系统剪贴板里的路径**；若该路径在磁盘上存在，则更新 **Working Directory** 与 **Files** 窗格；若像是常见 **R 相关文件**，则在编辑器中**打开**（详见 [README.md](README.md) 中的扩展名列表）。
+**语言：中文** · **English documentation:** [README.md](README.md)
 
-**英文主文档：** [README.md](README.md)
+本仓库提供一个 **RStudio 插件**（安装后的 R 包名为 **`rstudio.clipboard.path`**）。它会读取**系统剪贴板**里的**目录或文件路径**；若路径存在，则设置 **Working Directory** 与 **Files** 窗格；若判断为常见 **R 相关文件**，还会在编辑器中**打开**该文件（见下文 **行为说明**）。
 
-## 不是给脚本里 `library()` 用的库
+---
 
-日常写代码**不需要**、也不应该把它当成普通 R 包来 `library()`。RStudio 插件通过**一次性安装**一个小包交付（RStudio 靠这样才能加载插件）；之后只要在菜单或快捷键里**点插件**即可。
+## 不是日常编程用的「库」
 
-## 环境与平台
+不要在日常脚本里 `library()` 本包。只需**安装一次**，之后通过 **Addins**、**命令面板** 或**自己绑定的快捷键**运行插件即可。
 
-- **RStudio**（`rstudioapi`）。
-- **Windows / macOS / Linux**，剪贴板依赖 **`clipr`**。
-- **Linux**：若读不到剪贴板，请安装 **xclip**、**xsel** 或 **wl-clipboard**。
+## 环境与依赖
 
-**为什么装了 `clipr`？** 本插件用 **`clipr`** 跨平台读剪贴板，安装本包时会**自动**装上，一般不必单独再装。Addins 列表里若还看到 `clipr` 自带的其它项（如 “Output to clipboard”），与本插件无关，可忽略。
+- **RStudio**（依赖 `rstudioapi`）。
+- **Windows / macOS / Linux**，剪贴板通过 CRAN 包 **`clipr`**。
+- **Linux**：若无法读剪贴板，请安装 **xclip**、**xsel**（X11）或 **wl-clipboard**（Wayland）。
 
-## 一次性安装
+安装本插件时会**自动**安装 **`clipr`**。Addins 列表里若还有 **`clipr`** 自带的其它项（如 “Output to clipboard”），与 **RStudio clipboard path** 无关。
 
-本地克隆后：
+## 安装说明
+
+插件源码在本仓库的 **`tcwd`** 子目录中；安装完成后，R 里的包名是 **`rstudio.clipboard.path`**。
+
+### 方式 A — 从 GitHub 安装（无需本地路径）
+
+将下面的 `OWNER` 和 `REPO` 换成 GitHub 用户名（或组织名）和仓库名。
 
 ```r
-install.packages("你的路径/RStudio-set-path/tcwd", repos = NULL, type = "source")
-```
-
-推到 GitHub 之后可用（把 `OWNER/REPO` 换成你的仓库）：
-
-```r
+install.packages("remotes")  # 若尚未安装
 remotes::install_github("OWNER/REPO", subdir = "tcwd")
 ```
 
-安装后的 R 包名为 **`rstudio.clipboard.path`**。若曾装过旧名 **`clippath`**，执行一次 `remove.packages("clippath")`。安装后**重启 RStudio**。
+### 方式 B — 从本地克隆安装（使用相对路径）
 
-公开仓库步骤与其它发布渠道（CRAN、R-universe、社区等）见 [README.md](README.md) 末尾 **Publishing the project**；概要：**GitHub** 托管源码 → 他人用 `remotes::install_github(..., subdir = "tcwd")`；若要 `install.packages()` 全网友好安装，可再考虑 **CRAN** 或 **R-universe**。
+1. 克隆或下载本仓库到本机任意位置。
+2. 在 RStudio 中，把**工作目录**设为**仓库根目录**（即**包含** `tcwd` 文件夹的那一层）。可用 **Session → Set Working Directory → Choose Directory…**。
+3. 在控制台执行**下面任选其一**（`"tcwd"` 相对于**当前工作目录**，无需写 `C:\...` 等绝对路径）：
+
+```r
+install.packages("tcwd", repos = NULL, type = "source")
+```
+
+```r
+install.packages("remotes")
+remotes::install_local("tcwd")
+```
+
+### 安装之后
+
+**重启 RStudio**。若曾安装过旧包名 **`clippath`**，请执行一次：`remove.packages("clippath")`。
 
 ## 日常使用
 
-1. 复制**目录或文件**的完整路径到剪贴板。
-2. 用下面任一方式运行插件。
+1. 将**目录或文件**的完整路径复制到剪贴板（多行时只使用与实现一致的首行逻辑）。
+2. 用下文 **快速运行插件** 中的任一方式执行。
 
-支持带引号路径与 UTF-8 BOM。详细行为表见 [README.md](README.md)。
+支持带引号路径与 UTF-8 BOM。
 
-### 更快唤起（没法挂到「文件」顶层菜单）
+## 快速运行插件
 
-RStudio **不允许** R 插件出现在 **File / Edit** 那一层系统菜单里，这是 IDE 的限制。本包**不提供预设快捷键**，需要的话请在 RStudio 里自己绑定。
+RStudio **不允许**把插件挂到 **File / Edit** 等顶层菜单。本包**不自带默认快捷键**，需要请自行在快捷键设置里绑定。
 
 | 方式 | 操作 |
 |------|------|
-| **工具栏 Addins** | 主工具栏 **Addins** 下拉（运行按钮附近）带**搜索框**，不必每次 **Browse Addins**。 |
-| **快捷键** | **Tools → Modify Keyboard Shortcuts** → 搜索 **RStudio clipboard path** → 在快捷键栏里按下**任意**未占用的组合键。 |
+| **命令面板（推荐快速唤起）** | **Windows / Linux：** `Ctrl+Shift+P` · **macOS：** `Cmd+Shift+P`。或菜单 **Tools → Show Command Palette**。输入 **`RStudio clipboard path`** 或 **`clipboard`**，选中对应插件回车。 |
+| **工具栏 Addins** | 主工具栏 **Addins** 下拉（在 **Run** 附近），带**搜索框**，可少用 **Browse Addins**。 |
+| **自定义快捷键** | **Tools → Modify Keyboard Shortcuts** → 搜索 **RStudio clipboard path** → 在快捷键栏按下**任意**未占用的组合键。 |
+
+## 行为说明
+
+| 剪贴板内容 | Working Directory + Files 窗格 | 是否在编辑器打开文件 |
+|------------|--------------------------------|----------------------|
+| 已存在的目录 | 该目录 | 否 |
+| 带 R 常见扩展名的文件，或 `.Rprofile` / `.Renviron` | 该文件所在目录 | 是 |
+| 其它已存在文件 | 该文件所在目录 | 否 |
+
+**会在编辑器中打开的文件扩展名**（不区分大小写）：  
+`r`, `rmd`, `qmd`, `rnw`, `rhtml`, `rd`, `rproj`, `rpres`, `rhistory`, `c`, `cpp`, `cc`, `cxx`, `h`, `hpp`, `f`, `f90`，以及文件名为 `.Rprofile`、`.Renviron` 的情况。
+
+## 仓库结构
+
+| 路径 | 说明 |
+|------|------|
+| [`tcwd/R/sync_path_from_clipboard.R`](tcwd/R/sync_path_from_clipboard.R) | 插件实现代码 |
+| [`tcwd/inst/rstudio/addins.dcf`](tcwd/inst/rstudio/addins.dcf) | RStudio 注册信息 |
+
+## 许可证
+
+见 [`tcwd/LICENSE`](tcwd/LICENSE)。
+
+## 公开与分发（概要）
+
+- **GitHub**：托管源码；他人用 **方式 A** 的 `remotes::install_github(..., subdir = "tcwd")` 安装。具体 `git remote` / `git push` 步骤与 **CRAN、R-universe** 等渠道说明见英文主文档 [README.md](README.md) 中的 **Publishing the project** 一节。
