@@ -4,41 +4,44 @@
 
 ## 概述
 
-`rstudio.quickwd` 向 RStudio 登记一个插件：**RStudio quick working directory**。你在命令面板、Addins 菜单或自定义快捷键里**手动运行**它时，会按当前情况更新 `setwd()` 与 **Files** 窗格，数据来源可以是：
+`rstudio.quickwd` 向 RStudio 登记 **两个** 插件，**命令面板**和 **Browse Addins** 里会列出两条、互不混淆：
 
-- **剪贴板里的路径**（目录或文件），或  
-- **当前在编辑器里打开、且 RStudio 能给出磁盘路径的文件**：用该文件的**实际路径**（须仍在磁盘上存在），把工作目录设为该路径的**所在文件夹**（即父目录）。
+| 插件名（英文，与 RStudio 一致） | 作用 |
+|--------------------------------|------|
+| **Quick working directory — clipboard** | 只用**剪贴板**路径（首行）更新 `setwd()` 与 **Files**。 |
+| **Quick working directory — active file** | 只用**当前源标签页**的磁盘路径（父目录）；**Untitled** 无路径。 |
 
-若剪贴板首行解析为磁盘上存在的路径，则按该路径处理（是否在编辑器打开文件见下文 **行为说明**）；否则改用**当前活动源标签页**对应的**磁盘路径**的父目录；**Untitled** 等没有磁盘路径的标签页无法走这一条。插件不会在后台自行执行。
+需要哪个就选哪条，**不会在界面里自动在剪贴板与当前文件之间切换**。
 
-在 **R 控制台**可限定只走一种来源：`quick_working_directory("clipboard")` 或 `quick_working_directory("active")`（见下文）。
+**R 控制台**里：`quick_working_directory("clipboard")` / `quick_working_directory("active")` 与上面对应。无参的 `quick_working_directory()`（即 `source = "default"`）会先试剪贴板再试当前文件，适合写在脚本里，**未**登记为插件。
 
 ---
 
 ## 在 RStudio 里运行
 
-装好本包后**重启一次 RStudio**。插件登记在 [`addins.dcf`](rstudio.quickwd/inst/rstudio/addins.dcf)：
+装好本包后**重启一次 RStudio**。两条插件均在 [`addins.dcf`](rstudio.quickwd/inst/rstudio/addins.dcf)：
 
-| 名称（与 RStudio 列表一致） | 作用 |
-|----------------------------|------|
-| **RStudio quick working directory** | 剪贴板首行为有效路径则用剪贴板；否则用**当前活动标签页**对应**磁盘路径**的父目录。细则见下文。 |
+| 名称 | 作用 |
+|------|------|
+| **Quick working directory — clipboard** | 仅剪贴板。细则见 **行为说明**。 |
+| **Quick working directory — active file** | 仅当前活动标签页磁盘路径。细则见 **行为说明**。 |
 
 | 入口 | 操作 |
 |------|------|
-| **Tools → Browse Addins…** | 搜索后点 **Run**。 |
+| **Tools → Browse Addins…** | 搜 **clipboard** 或 **active file**，**Run**。 |
 | **工具栏** | **Addins** 下拉（**Run** 附近）。 |
-| **命令面板** | **Tools → Show Command Palette**；亦可参见下文 **推荐用法**。 |
+| **命令面板** | **Tools → Show Command Palette**；参见下文 **推荐用法**。 |
 
 ---
 
 ## 不是日常编程用的「库」
 
-不要在日常脚本里 `library()` 本包。只需**安装一次**；之后用 **命令面板 + 键盘**、**Browse Addins**、工具栏 **Addins** 或**自定义快捷键**调用**同一个**插件。
+不要在日常脚本里 `library()` 本包。只需**安装一次**；之后用 **命令面板**、**Browse Addins**、工具栏 **Addins** 或**快捷键**调用**对应**的那一条插件。
 
 ## 环境与依赖
 
 - **RStudio**（依赖 `rstudioapi`）。
-- **Windows / macOS / Linux**，剪贴板通过 CRAN 包 **`clipr`**（每次运行时要判断「剪贴板路径是否有效」会读剪贴板；`quick_working_directory("clipboard")` 也依赖它）。
+- **Windows / macOS / Linux**，剪贴板通过 CRAN 包 **`clipr`**（**clipboard** 插件及无参 `quick_working_directory()` 会用到）。
 - **Linux**：若无法读剪贴板，请安装 **xclip**、**xsel**（X11）或 **wl-clipboard**（Wayland）。
 
 安装本包时会**自动**安装 **`clipr`**。Addins 列表里 **`clipr`** 自带的其它项（如 “Output to clipboard”）与本包无关。
@@ -81,10 +84,8 @@ GitHub 仓库：**`anthonyhtang/rstudio-quick-working-directory`**，R 包在其
 
 ## 日常使用
 
-1. **想按剪贴板来：** 复制**目录或文件**路径（多行时只使用首行逻辑），运行插件。支持带引号路径与 UTF-8 BOM。
-2. **想按当前打开文件来：** 清空剪贴板或确保剪贴板**不是**有效路径，在编辑器里**聚焦**已有**磁盘路径**的标签页（不是 **Untitled**），再运行**同一**插件。
-
-若剪贴板里仍是**旧但有效**的路径，下一次运行会**先按剪贴板**处理。若只想按**当前标签页磁盘路径**的父目录来，可在控制台执行 `rstudio.quickwd::quick_working_directory("active")`，或清空/改掉剪贴板内容。
+1. **剪贴板：** 复制**目录或文件**路径（多行时只取首行逻辑），打开命令面板，运行 **Quick working directory — clipboard**。支持带引号路径与 UTF-8 BOM。
+2. **当前文件：** 在编辑器里**聚焦**已有**磁盘路径**的标签页（非 **Untitled**），运行 **Quick working directory — active file**。
 
 ## 推荐用法：命令面板 + 关键字（最快、尽量不用鼠标）
 
@@ -95,7 +96,7 @@ GitHub 仓库：**`anthonyhtang/rstudio-quick-working-directory`**，R 包在其
 
 也可：**Tools → Show Command Palette**。
 
-在面板里可搜索，例如：**`quick working`**、**`RStudio quick`**、**`working directory`**、**`quick wd`**。
+在面板里可搜索，例如：**`quick working`**、**`clipboard`**、**`active file`**、**`working directory`**。
 
 **若本机打开命令面板的不是 Ctrl+Shift+P**（例如 **Ctrl+Alt+P**）：**Tools → Modify Keyboard Shortcuts** → 搜 **`Show Command Palette`**，以其中显示为准。
 
@@ -103,11 +104,11 @@ GitHub 仓库：**`anthonyhtang/rstudio-quick-working-directory`**，R 包在其
 
 ## 自定义快捷键（可选）
 
-本包**不自带**默认快捷键。可为该插件绑定一组未占用组合键：
+本包**不自带**默认快捷键。
 
 1. **Tools → Modify Keyboard Shortcuts**
-2. 搜索 **`RStudio quick working directory`**
-3. 在 **快捷键** 格子里设置
+2. 搜索 **`Quick working directory`**（**Addins** 里会有 **clipboard** 与 **active file** 两行）
+3. 可分别为两行设置不同快捷键
 
 参考：[Custom shortcuts（Posit）](https://docs.posit.co/ide/user/ide/guide/productivity/custom-shortcuts.html)
 
@@ -115,26 +116,23 @@ GitHub 仓库：**`anthonyhtang/rstudio-quick-working-directory`**，R 包在其
 
 | 方式 | 操作 |
 |------|------|
-| **工具栏 Addins** | **Addins** → 搜索 **RStudio quick working directory** → 运行。 |
-| **Browse Addins** | **Tools → Browse Addins…** → 搜索 **quick** → **Run**。 |
-| **R 控制台** | `rstudio.quickwd::quick_working_directory()` — 与插件相同（`source = "default"`）。可选：`quick_working_directory("clipboard")` 或 `quick_working_directory("active")` 分别只走剪贴板或只走当前文件。 |
+| **工具栏 Addins** | **Addins** → 搜 **clipboard** 或 **active file**。 |
+| **Browse Addins** | **Tools → Browse Addins…** → 搜 **quick working** → 选需要的行 **Run**。 |
+| **R 控制台** | `quick_working_directory_clipboard()` / `quick_working_directory_active_file()` 与两条插件一致。`quick_working_directory()` 为先剪贴板、再当前文件（`source = "default"`）。 |
 
 ### 命令面板里搜不到？
 
 - **重启 RStudio** 后再试。
-- 可试 **`addin`**、**`quick`**、**`working`**、**`directory`** 等英文关键词。
-- 最稳妥：**Tools → Browse Addins…** 搜索 **RStudio quick working directory** → **Run**。
+- 可试 **`quick`**、**`clipboard`**、**`active`** 等英文关键词。
+- 最稳妥：**Tools → Browse Addins…** → 搜 **Quick working directory** → **Run**。
 
 ## 行为说明
 
-### 默认行为（插件与无参 `quick_working_directory()`）
+成功 `setwd` 之后，会用 `rstudioapi::sendToConsole(..., execute = TRUE)` 在 **Console** 里再执行同一行 `setwd("...")`（失败则 `message()`），便于对照或复制。
 
-在**每一次**你触发的运行里：
+### Quick working directory — clipboard
 
-1. 若剪贴板解析出**可用且存在**的路径 → 与下文 **从剪贴板** 相同。
-2. 否则 → 与下文 **从当前文件** 相同。
-
-### 从剪贴板（当本次运行剪贴板符合条件时，或 `source = "clipboard"`）
+与 `quick_working_directory("clipboard")` / `quick_working_directory_clipboard()` 相同。
 
 | 剪贴板内容 | Working Directory + Files 窗格 | 是否在编辑器打开文件 |
 |------------|--------------------------------|----------------------|
@@ -145,17 +143,23 @@ GitHub 仓库：**`anthonyhtang/rstudio-quick-working-directory`**，R 包在其
 **会在编辑器中打开的文件扩展名**（不区分大小写）：  
 `r`, `rmd`, `qmd`, `rnw`, `rhtml`, `rd`, `rproj`, `rpres`, `rhistory`, `c`, `cpp`, `cc`, `cxx`, `h`, `hpp`, `f`, `f90`，以及文件名为 `.Rprofile`、`.Renviron` 的情况。
 
-### 从当前文件（当本次运行剪贴板不符合条件时，或 `source = "active"`）
+### Quick working directory — active file
 
-依据 `rstudioapi::getActiveDocumentContext()`：使用 RStudio 为**当前聚焦源标签页**返回的**路径字符串**（即该文件在磁盘上的实际路径，须仍存在）。工作目录设为该路径的**父目录**（若该路径本身是目录，则设为该目录）。
+与 `quick_working_directory("active")` / `quick_working_directory_active_file()` 相同。
+
+依据 `rstudioapi::getActiveDocumentContext()`：使用 RStudio 为**当前聚焦源标签页**返回的**路径字符串**（磁盘上的实际路径，须仍存在）。工作目录设为该路径的**父目录**（若该路径本身是目录，则设为该目录）。
 
 | 情况 | 结果 |
 |------|------|
 | 当前标签有**磁盘路径**且路径仍存在 | `setwd()` + Files → 该路径的**父目录**（路径为目录时则为该目录）。 |
-| **Untitled** / 无磁盘路径 | 报错；请先存盘或在剪贴板放入有效路径。 |
+| **Untitled** / 无磁盘路径 | 报错；请先存盘，或改用 **clipboard** 插件。 |
 | RStudio 给出的路径在磁盘上已不存在 | 报错。 |
 
 不会在编辑器里再次 `navigateToFile()` — 文件本来已打开。
+
+### 无参 `quick_working_directory()`（仅控制台 / 脚本）
+
+未登记为插件。若剪贴板首行为可用且存在的路径，行为同上文 **clipboard**；否则同 **active file**。
 
 ## 仓库结构
 

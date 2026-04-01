@@ -1,5 +1,8 @@
 export(quick_working_directory)
+export(quick_working_directory_active_file)
+export(quick_working_directory_clipboard)
 importFrom(rstudioapi, filesPaneNavigate)
 importFrom(rstudioapi, getActiveDocumentContext)
 importFrom(rstudioapi, isAvailable)
 importFrom(rstudioapi, navigateToFile)
+importFrom(rstudioapi, sendToConsole)

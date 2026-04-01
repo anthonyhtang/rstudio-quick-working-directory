@@ -4,41 +4,44 @@
 
 ## Overview
 
-`rstudio.quickwd` installs one RStudio add-in, **RStudio quick working directory**. When you run it (palette, Addins menu, or a shortcut), it updates `setwd()` and the **Files** pane using either:
+`rstudio.quickwd` registers **two** RStudio add-ins so the **command palette** and **Browse Addins** list two separate actions:
 
-- a **path from the clipboard** (folder or file), or  
-- the **parent folder** of the file you have open in the editor, using that file’s **actual path on disk** (RStudio’s path for the active tab; it must still exist),
+| Add-in (palette name) | What it does |
+|----------------------|--------------|
+| **Quick working directory — clipboard** | `setwd()` + **Files** from the **clipboard** path (first line). |
+| **Quick working directory — active file** | `setwd()` + **Files** from the **active source tab**’s on-disk path (parent folder; **Untitled** has no path). |
 
-depending on what applies on that run. If the clipboard’s first line is an existing path, that is used (with the file-opening rules described under **Behaviour**). Otherwise the add-in reads the **on-disk path** of the **active source tab** and sets the working directory to that path’s **parent folder** (unsaved **Untitled** documents have no on-disk path). Nothing runs in the background; it only acts when you invoke it.
+Pick whichever matches what you want; there is no automatic switching between them in the UI.
 
-From the **R console** you can restrict to one source: `quick_working_directory("clipboard")` or `quick_working_directory("active")` (see below).
+From the **R console**, `quick_working_directory("clipboard")` and `quick_working_directory("active")` match those add-ins. `quick_working_directory()` with no arguments (or `source = "default"`) tries the clipboard first, then the active file — useful in scripts, not registered as an add-in.
 
 ---
 
 ## Running it in RStudio
 
-Install the package, restart RStudio once. The add-in is declared in [`addins.dcf`](rstudio.quickwd/inst/rstudio/addins.dcf):
+Install the package, restart RStudio once. Both add-ins are declared in [`addins.dcf`](rstudio.quickwd/inst/rstudio/addins.dcf):
 
 | Name | Effect |
 |------|--------|
-| **RStudio quick working directory** | Clipboard path (first line) if valid; else parent folder of the active tab’s on-disk file path. Details below. |
+| **Quick working directory — clipboard** | Clipboard path only. Details under **Behaviour**. |
+| **Quick working directory — active file** | Active tab’s on-disk path only. Details under **Behaviour**. |
 
 | Where | How |
 |--------|-----|
-| **Tools → Browse Addins…** | Search the list, **Run**. |
+| **Tools → Browse Addins…** | Search **clipboard** or **active file**, **Run**. |
 | **Toolbar** | **Addins** dropdown (near **Run**). |
-| **Command palette** | **Tools → Show Command Palette** — also under **Fastest way to run the add-in** below. |
+| **Command palette** | **Tools → Show Command Palette** — see **Fastest way** below. |
 
 ---
 
 ## Not a coding library
 
-Do **not** `library()` this in everyday scripts. Install it **once**; after that, run the add-in from the **command palette** (recommended), **Browse Addins**, the toolbar **Addins** menu, or a **shortcut** you assign yourself.
+Do **not** `library()` this in everyday scripts. Install it **once**; after that, run either add-in from the **command palette** (recommended), **Browse Addins**, the toolbar **Addins** menu, or **shortcuts** you assign yourself.
 
 ## Requirements
 
 - **RStudio** (uses `rstudioapi`).
-- **Windows, macOS, or Linux** — clipboard via [`clipr`](https://CRAN.R-project.org/package=clipr) (used when deciding clipboard vs active file on each run, and required for `quick_working_directory("clipboard")`).
+- **Windows, macOS, or Linux** — clipboard via [`clipr`](https://CRAN.R-project.org/package=clipr) (required for the **clipboard** add-in and for `quick_working_directory()` default mode).
 - **Linux:** if the clipboard is unavailable, install **xclip** or **xsel** (X11) or **wl-clipboard** (Wayland).
 
 Installing this package pulls in **`clipr`** automatically. Other entries you may see under the **clipr** package in the add-in list (e.g. “Output to clipboard”) are unrelated to this package.
@@ -83,12 +86,10 @@ Canonical GitHub repo: **`anthonyhtang/rstudio-quick-working-directory`**. The R
 
 ## Daily use
 
-1. **To prefer the clipboard:** copy a **folder** or **file** path (only the first line is used if there are several), then run the add-in. Quoted paths and a leading UTF-8 BOM are tolerated.
-2. **To use the open file instead:** clear the clipboard or ensure it does **not** contain a valid path, focus a source tab whose file **has a path on disk** (not **Untitled**), then run the same add-in.
+1. **Clipboard:** copy a **folder** or **file** path (only the first line is used if there are several), open the command palette, run **Quick working directory — clipboard**. Quoted paths and a leading UTF-8 BOM are tolerated.
+2. **Active file:** focus a source tab whose file **has a path on disk** (not **Untitled**), run **Quick working directory — active file**.
 
-If the clipboard still holds an **old but valid** path, the next run will follow the clipboard first. To use **only** the active tab’s on-disk path (parent folder), run `rstudio.quickwd::quick_working_directory("active")` in the console, or clear/replace the clipboard text.
-
-## Fastest way to run the add-in (keyboard, no mouse)
+## Fastest way to run the add-ins (keyboard, no mouse)
 
 **Use the Command Palette:** press the shortcut, type a keyword, press **Enter**.
 
@@ -99,7 +100,7 @@ If the clipboard still holds an **old but valid** path, the next run will follow
 
 You can also open it from the menu: **Tools → Show Command Palette**.
 
-Then search e.g. **`quick working`**, **`RStudio quick`**, **`working directory`**, **`quick wd`**.
+Then search e.g. **`quick working`**, **`clipboard`**, **`active file`**, **`working directory`**.
 
 **If your shortcut is different** (for example you remapped it to **Ctrl+Alt+P**): go to **Tools → Modify Keyboard Shortcuts**, search **`Show Command Palette`**, and use whatever key combination RStudio shows there.
 
@@ -107,38 +108,35 @@ Official overview: [Command Palette – RStudio / Posit](https://docs.posit.co/i
 
 ## Custom shortcut (optional)
 
-This package does **not** ship a default keybinding. To bind your own:
+This package does **not** ship default keybindings. To bind your own:
 
 1. **Tools → Modify Keyboard Shortcuts**
-2. Search **`RStudio quick working directory`** (or scroll the **Addins** section)
-3. Click the **Shortcut** cell and press any **unused** key combination
+2. Search **`Quick working directory`** (or scroll **Addins**) — you should see **clipboard** and **active file** as two rows.
+3. Set a **different** shortcut on each row if you want both on the keyboard.
 
 [Custom shortcuts – RStudio / Posit](https://docs.posit.co/ide/user/ide/guide/productivity/custom-shortcuts.html)
 
-## Other ways to run the add-in
+## Other ways to run the add-ins
 
 | Method | How |
 |--------|-----|
-| **Toolbar Addins** | **Addins** on the **main toolbar** (near **Run**) — search box → **RStudio quick working directory**. |
-| **Browse Addins** | **Tools → Browse Addins…** → search **quick** → **Run**. |
-| **R Console** | `rstudio.quickwd::quick_working_directory()` — same as the add-in (`source = "default"`). Optional: `quick_working_directory("clipboard")` or `quick_working_directory("active")` for clipboard-only or active-file-only. |
+| **Toolbar Addins** | **Addins** on the **main toolbar** (near **Run**) — search **clipboard** or **active file**. |
+| **Browse Addins** | **Tools → Browse Addins…** → search **quick working** → **Run** the row you need. |
+| **R Console** | `quick_working_directory_clipboard()` / `quick_working_directory_active_file()` — same as the add-ins. `quick_working_directory()` uses clipboard first, else active file (`source = "default"`). |
 
-### Command palette does not show the add-in?
+### Command palette does not show an add-in?
 
 - **Restart RStudio** once after `install_github` so add-ins are rescanned.
-- Try **`addin`**, **`quick`**, **`working`**, **`directory`** (English).
-- Reliable path: **Tools → Browse Addins…** → search **RStudio quick working directory** → **Run**.
+- Try **`quick`**, **`clipboard`**, **`active`** (English).
+- Reliable path: **Tools → Browse Addins…** → search **Quick working directory** → **Run**.
 
 ## Behaviour
 
-### Default (`quick_working_directory()` and the add-in)
+After a successful `setwd`, the package sends the same call to the **Console** with `rstudioapi::sendToConsole(..., execute = TRUE)` (falls back to `message()` if that fails), so you see the exact `setwd("...")` line for reference or copy-paste.
 
-On **each** invocation you trigger:
+### Quick working directory — clipboard
 
-1. If the clipboard yields a **usable path** that **exists** on disk → same rules as **From clipboard** below.
-2. Else → same rules as **From active file** below.
-
-### From clipboard (when the clipboard qualifies on that run, or `source = "clipboard"`)
+Same as `quick_working_directory("clipboard")` / `quick_working_directory_clipboard()`.
 
 | Clipboard points to | Working directory + Files pane | Open file in editor |
 |---------------------|--------------------------------|----------------------|
@@ -149,17 +147,23 @@ On **each** invocation you trigger:
 **Extensions treated as “open in editor”** (case-insensitive):  
 `r`, `rmd`, `qmd`, `rnw`, `rhtml`, `rd`, `rproj`, `rpres`, `rhistory`, `c`, `cpp`, `cc`, `cxx`, `h`, `hpp`, `f`, `f90`, plus basenames `.Rprofile` and `.Renviron`.
 
-### From active file (when the clipboard does not qualify on that run, or `source = "active"`)
+### Quick working directory — active file
+
+Same as `quick_working_directory("active")` / `quick_working_directory_active_file()`.
 
 Uses `rstudioapi::getActiveDocumentContext()` — the **path string** RStudio reports for the **focused source tab**. Working directory becomes the **parent** of that path (or the path itself if it is a directory).
 
 | Situation | Result |
 |-----------|--------|
 | Active tab has an **on-disk path** that still exists | `setwd()` + Files pane → **parent folder** of that path (or the directory if the tab is a folder path). |
-| Active tab is **Untitled** / no path on disk | Error: save to a file or put a valid path on the clipboard. |
+| Active tab is **Untitled** / no path on disk | Error: save the file, or use the **clipboard** add-in instead. |
 | Reported path no longer exists on disk | Error. |
 
 Does **not** call `navigateToFile()` here — the document is already open.
+
+### `quick_working_directory()` default (console / scripts only)
+
+Not an add-in. If the clipboard’s first line is a usable path that exists on disk, behaviour matches **clipboard** above; otherwise it matches **active file** above.
 
 ## Repository layout
 

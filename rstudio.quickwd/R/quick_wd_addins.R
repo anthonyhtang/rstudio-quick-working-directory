@@ -129,6 +129,27 @@ normalize_existing_path <- function(path) {
   }
 }
 
+#' Emit \code{setwd(...)} in the RStudio console (executed again) so the user sees the exact call.
+#' @noRd
+announce_setwd <- function(dir_abs) {
+  cmd <- paste0("setwd(", deparse(dir_abs, width.cutoff = 500L, backtick = TRUE)[1L], ")")
+  if (isAvailable()) {
+    ok <- tryCatch(
+      {
+        sendToConsole(cmd, execute = TRUE)
+        TRUE
+      },
+      error = function(e) FALSE
+    )
+    if (!ok) {
+      message(cmd)
+    }
+  } else {
+    message(cmd)
+  }
+  invisible(dir_abs)
+}
+
 #' Set \code{setwd} + Files pane from an existing file or directory path; may open R files.
 #' @noRd
 apply_wd_from_existing_path <- function(path_clean) {
@@ -136,11 +157,13 @@ apply_wd_from_existing_path <- function(path_clean) {
   if (dir.exists(path_abs)) {
     setwd(path_abs)
     filesPaneNavigate(path_abs)
+    announce_setwd(path_abs)
     return(invisible(path_abs))
   }
   dir_abs <- normalize_existing_path(dirname(path_abs))
   setwd(dir_abs)
   filesPaneNavigate(dir_abs)
+  announce_setwd(dir_abs)
   if (is_r_ecosystem_file(path_abs)) {
     navigateToFile(path_abs)
   }
@@ -184,22 +207,19 @@ quick_wd_from_active_file_only <- function() {
   }
   setwd(dir_abs)
   filesPaneNavigate(dir_abs)
+  announce_setwd(dir_abs)
   invisible(path_abs)
 }
 
-#' RStudio add-in: quick working directory (clipboard and/or active file).
+#' Quick working directory (programmatic API).
 #'
-#' One manually triggered add-in with two capabilities: (1) set wd from a path on
-#' the clipboard, (2) set wd from the on-disk path of the file in the active
-#' source tab (parent folder; \code{getActiveDocumentContext()$path}). With
-#' \code{source = "default"}, each run first checks the clipboard for a valid
-#' existing path (first line); if none, it uses the active tab path. \code{"clipboard"}
-#' and \code{"active"} force one source only.
+#' RStudio registers \strong{two} add-ins: \code{quick_working_directory_clipboard()}
+#' and \code{quick_working_directory_active_file()} (two separate command-palette
+#' entries). This function with \code{source = "default"} uses the clipboard when
+#' its first line is a valid path, else the active tab (for the console or custom
+#' code).
 #'
 #' @param source One of \code{"default"}, \code{"clipboard"}, \code{"active"}.
-#'   The add-in binding uses \code{"default"}. From the console, use
-#'   \code{quick_working_directory("clipboard")} or \code{...("active")} when you
-#'   want a single capability regardless of clipboard contents.
 #'
 #' @return Normalized absolute path used for \code{setwd} / navigation (invisibly).
 #' @export
@@ -224,4 +244,16 @@ quick_working_directory <- function(source = c("default", "clipboard", "active")
     return(apply_wd_from_existing_path(clip_path))
   }
   quick_wd_from_active_file_only()
+}
+
+#' @describeIn quick_working_directory Add-in: set wd from clipboard path only.
+#' @export
+quick_working_directory_clipboard <- function() {
+  quick_working_directory("clipboard")
+}
+
+#' @describeIn quick_working_directory Add-in: set wd from active file path only.
+#' @export
+quick_working_directory_active_file <- function() {
+  quick_working_directory("active")
 }

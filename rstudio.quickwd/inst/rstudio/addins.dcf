@@ -1,4 +1,9 @@
-Name: RStudio quick working directory
-Description: Manually run: wd + Files from clipboard if valid, else parent of active tab's on-disk path (via rstudioapi).
-Binding: quick_working_directory
+Name: Quick working directory — clipboard
+Description: setwd + Files from the path on the clipboard (first line).
+Binding: quick_working_directory_clipboard
+Interactive: true
+
+Name: Quick working directory — active file
+Description: setwd + Files from the on-disk path of the active source tab (parent folder).
+Binding: quick_working_directory_active_file
 Interactive: true
