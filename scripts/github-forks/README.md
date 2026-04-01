@@ -1,6 +1,8 @@
-# List and delete your GitHub forks
+# List and delete your GitHub forks (public forks only)
 
-These scripts work on **your** forks (repos under your account where `fork = true`). They do not delete other people’s originals.
+These scripts only deal with repositories that are **forks** of someone else’s project (`fork = true` on GitHub). **Your own originals are never listed** — they are not forks.
+
+They also **never list or delete private (or internal) forks**. Only **public** forks appear in `my-forks-list.txt`, and the delete script **double-checks** each line with `gh repo view` and **skips** anything that is private, internal, or not a fork.
 
 ## Prerequisites
 
@@ -9,7 +11,7 @@ These scripts work on **your** forks (repos under your account where `fork = tru
 
 ## Steps
 
-1. **List forks** (writes `my-forks-list.txt` in this folder):
+1. **List public forks** (writes `my-forks-list.txt` in this folder):
 
    ```powershell
    cd scripts\github-forks
@@ -26,7 +28,7 @@ These scripts work on **your** forks (repos under your account where `fork = tru
    notepad forks-to-delete.txt   # delete lines to keep
    ```
 
-4. **Dry run** (only prints what would be deleted):
+4. **Dry run** (checks each repo; shows what would be deleted):
 
    ```powershell
    .\2-delete-forks-from-list.ps1
@@ -38,7 +40,15 @@ These scripts work on **your** forks (repos under your account where `fork = tru
    .\2-delete-forks-from-list.ps1 -ConfirmDeletion
    ```
 
+## Safety rules (built in)
+
+| Rule | How |
+|------|-----|
+| No **private** forks | Excluded when listing; delete script skips if still private. |
+| No **internal** visibility (e.g. some orgs) | Excluded when listing; skipped on delete. |
+| Not a **fork** (your own repo) | Never in `gh repo list --fork`; delete script refuses if `isFork` is false. |
+
 ## Notes
 
-- Default fork list limit is **1000**. If you have more, extend `1-list-my-forks.ps1` (e.g. use `gh api user/repos --paginate` with a `jq` filter on `.fork`).
+- Default fork list limit is **1000**. If you have more public forks, extend `1-list-my-forks.ps1` (e.g. `gh api user/repos --paginate` with filters).
 - Deletion uses `gh repo delete <repo> --yes`. You must have permission to delete those repositories (you own them).
