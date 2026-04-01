@@ -1,12 +1,12 @@
 Package: rstudio.clipboard.path
-Title: RStudio Add-in — Set Working Directory from Clipboard Path
-Version: 1.1.0
+Title: RStudio Add-ins — Working Directory from Clipboard or Active File
+Version: 1.2.0
 Authors@R: person("HTang", email = "tang.heng@gmail.com", role = c("aut", "cre"))
-Description: RStudio add-in (Windows, macOS, Linux): read a directory or file
-    path from the system clipboard, set the session working directory and Files
-    pane, and open the file in the editor when it uses a common R-related
-    extension. Clipboard access uses the 'clipr' package; on Linux you may need
-    xclip, xsel, or wl-clipboard.
+Description: Two RStudio add-ins (Windows, macOS, Linux): (1) read a path from
+    the system clipboard and set the working directory and Files pane (and open
+    common R-related files in the editor); (2) set working directory and Files
+    pane from the folder of the file open in the editor. Clipboard access uses
+    the 'clipr' package; on Linux you may need xclip, xsel, or wl-clipboard.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:

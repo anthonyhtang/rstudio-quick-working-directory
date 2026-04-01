@@ -139,3 +139,46 @@ sync_path_from_clipboard <- function() {
   }
   invisible(path_abs)
 }
+
+#' RStudio add-in: set working directory and Files pane from the active editor file.
+#'
+#' Uses the path of the document currently focused in the source editor (not the
+#' clipboard). Sets \code{setwd()} and \code{filesPaneNavigate()} to that file's
+#' parent directory. Does not call \code{navigateToFile()} — the file is already open.
+#' Unsaved \emph{Untitled} buffers have no path on disk and will error until saved.
+#'
+#' @return Normalized absolute path of the active file (invisibly).
+#' @export
+sync_wd_from_active_file <- function() {
+  if (!isAvailable()) {
+    stop("This add-in must be run inside RStudio.", call. = FALSE)
+  }
+
+  ctx <- getActiveDocumentContext()
+  path_raw <- ctx$path
+  if (is.null(path_raw) || !nzchar(path_raw)) {
+    stop(
+      "The active editor has no file path (e.g. an unsaved Untitled document). ",
+      "Save the file or open one from disk, then run this add-in again.",
+      call. = FALSE
+    )
+  }
+
+  if (!file.exists(path_raw) && !dir.exists(path_raw)) {
+    stop(
+      "Active path does not exist on disk:\n", path_raw,
+      call. = FALSE
+    )
+  }
+
+  path_abs <- normalize_existing_path(path_raw)
+  dir_abs <- if (dir.exists(path_abs)) {
+    path_abs
+  } else {
+    normalize_existing_path(dirname(path_abs))
+  }
+
+  setwd(dir_abs)
+  filesPaneNavigate(dir_abs)
+  invisible(path_abs)
+}

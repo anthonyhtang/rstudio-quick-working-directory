@@ -1,4 +1,6 @@
 export(sync_path_from_clipboard)
+export(sync_wd_from_active_file)
 importFrom(rstudioapi, filesPaneNavigate)
+importFrom(rstudioapi, getActiveDocumentContext)
 importFrom(rstudioapi, isAvailable)
 importFrom(rstudioapi, navigateToFile)
