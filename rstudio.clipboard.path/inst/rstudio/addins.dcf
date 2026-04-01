@@ -1,9 +1,0 @@
-Name: RStudio clipboard path
-Description: If the clipboard contains a path, set working directory and Files pane (and open R-related files).
-Binding: sync_path_from_clipboard
-Interactive: true
-
-Name: Set WD from active file
-Description: Set working directory and Files pane to the folder of the file open in the editor.
-Binding: sync_wd_from_active_file
-Interactive: true

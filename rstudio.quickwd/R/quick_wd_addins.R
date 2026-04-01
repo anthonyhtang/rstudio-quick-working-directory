@@ -102,15 +102,15 @@ normalize_existing_path <- function(path) {
 
 #' RStudio add-in: set working directory and Files pane from the clipboard path.
 #'
-#' Intended to be run from the RStudio Addins menu (or a shortcut). Reads the
-#' first line of the system clipboard. If it is an existing directory, sets the
-#' working directory and Files pane. If it is an existing file, sets both to the
-#' parent directory and opens the file in the editor when it looks like a common
-#' R-related file (see package README).
+#' Part of \strong{RStudio quick working directory} (\pkg{rstudio.quickwd}).
+#' Reads the first line of the system clipboard. If it is an existing directory,
+#' sets the working directory and Files pane. If it is an existing file, sets both
+#' to the parent directory and opens the file in the editor when it looks like a
+#' common R-related file (see package README).
 #'
 #' @return Normalized absolute path (invisibly).
 #' @export
-sync_path_from_clipboard <- function() {
+quick_wd_from_clipboard <- function() {
   if (!isAvailable()) {
     stop("This add-in must be run inside RStudio.", call. = FALSE)
   }
@@ -142,6 +142,7 @@ sync_path_from_clipboard <- function() {
 
 #' RStudio add-in: set working directory and Files pane from the active editor file.
 #'
+#' Part of \strong{RStudio quick working directory} (\pkg{rstudio.quickwd}).
 #' Uses the path of the document currently focused in the source editor (not the
 #' clipboard). Sets \code{setwd()} and \code{filesPaneNavigate()} to that file's
 #' parent directory. Does not call \code{navigateToFile()} — the file is already open.
@@ -149,7 +150,7 @@ sync_path_from_clipboard <- function() {
 #'
 #' @return Normalized absolute path of the active file (invisibly).
 #' @export
-sync_wd_from_active_file <- function() {
+quick_wd_from_active_file <- function() {
   if (!isAvailable()) {
     stop("This add-in must be run inside RStudio.", call. = FALSE)
   }
