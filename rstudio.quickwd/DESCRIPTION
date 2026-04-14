@@ -1,5 +1,5 @@
 Package: rstudio.quickwd
-Title: RStudio Quick Working Directory — Add-ins for Clipboard and Active File
+Title: RStudio Quick Working Directory — Add-Ins for Clipboard and Active File
 Version: 2.2.1
 Authors@R: person("HTang", email = "tang.heng@gmail.com", role = c("aut", "cre"))
 Description: Two RStudio add-ins (Windows, macOS, Linux): set working directory
